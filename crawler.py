@@ -132,7 +132,8 @@ class Crawler:
             begin: Callable = lambda soup: soup.find("h2", id="See_also"), 
             end: Callable = lambda sibling: getattr(sibling.next_element, "name", None) == "h2",
             get: Callable = None):
-    self.clear(url, max_iter, begin, end)
+    
+    self.clear(url, max_iter, begin, end, get)
     pbar = tqdm(total=self.max_iter, desc="Searching")
 
     data = self.getData(self.url)
@@ -149,6 +150,7 @@ class Crawler:
       name = self.stack.pop()
       self.iteration += 1
       data = self.getData(name)
+      
       if(get is not None):
         get(name, data)
       if(data is not None):

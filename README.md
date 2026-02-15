@@ -16,8 +16,8 @@
 ## TODO:
 - [x] Clean up
 - [x] Fetch link custom function
+- [x] Find content
 - [ ] Github
-- [ ] Find content
 - [ ] Docs
 
 ## Kitty
