@@ -10,9 +10,11 @@ class Crawler:
   queue = Queue()
   enqueued = set() 
   max_depth = 0
+  iteration = 0
 
-  def __init__(self, url: str):
+  def __init__(self, url: str, max_iter: int = 200):
     self.url = url
+    self.max_iter = max_iter
 
   def getData(self, url: str):
     headers = {
@@ -44,27 +46,28 @@ class Crawler:
 
 
   def search(self):
-    self.max_depth += 1
+    self.iteration += 1
     self.visited[self.url] = 1
     data = self.getData(self.url)
     self.getLinks(data)
 
-    while not self.queue.empty() and self.max_depth < 10:
+    while not self.queue.empty() and self.iteration < self.max_iter:
       name = self.queue.get()
       data = self.getData(name)
       self.getLinks(data)
       self.visited[name] = 1
-      self.max_depth += 1
+      self.iteration += 1
     
 
-  def maxDepth(self):
-    return self.max_depth
+  def maxIterations(self):
+    return self.iteration
   
   def getVisited(self):
-    return self.visited
+    return list(self.visited.keys())
 
 
 crawler = Crawler("https://en.wikipedia.org/wiki/Internet")
 crawler.search()
-print(crawler.maxDepth())
-print(crawler.getVisited())
+print(crawler.maxIterations())
+for el in crawler.getVisited():
+  print(el)
