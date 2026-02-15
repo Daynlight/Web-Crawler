@@ -3,7 +3,8 @@ from bs4 import BeautifulSoup
 from collections import defaultdict
 
 class Stack:
-  data = []
+  def __init__(self):
+    self.data = []
 
   def push(self, el):
     self.data.append(el)
@@ -16,16 +17,15 @@ class Stack:
 
 
 class Crawler:
-  visited = {}
-  stack = Stack()
-  enstackd = set() 
-  max_depth = 0
-  iteration = 0
-  graph = defaultdict(list)
-
   def __init__(self, url: str, max_iter: int = 200):
     self.url = url
     self.max_iter = max_iter
+    self.visited = {}
+    self.stack = Stack()
+    self.enstackd = set() 
+    self.max_depth = 0
+    self.iteration = 0
+    self.graph = defaultdict(list)
 
   def getData(self, url: str):
     headers = {
