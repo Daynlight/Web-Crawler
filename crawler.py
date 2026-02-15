@@ -2,12 +2,22 @@ import requests
 from bs4 import BeautifulSoup
 from collections import defaultdict
 
+class Stack:
+  data = []
 
+  def push(self, el):
+    self.data.append(el)
+  
+  def pop(self):
+    return self.data.pop()
+  
+  def size(self):
+    return len(self.data)
 
 
 class Crawler:
   visited = {}
-  stack = []
+  stack = Stack()
   enstackd = set() 
   max_depth = 0
   iteration = 0
@@ -42,7 +52,7 @@ class Crawler:
     for el in links:
       if(el not in self.visited or
         el not in self.enstackd):
-        self.stack.append(el)
+        self.stack.push(el)
         self.enstackd.add(el)
         self.graph[url].append(el)
 
@@ -53,7 +63,7 @@ class Crawler:
     data = self.getData(self.url)
     self.getLinks(self.url, data)
 
-    while len(self.stack) > 0 and self.iteration < self.max_iter:
+    while self.stack.size() > 0 and self.iteration < self.max_iter:
       name = self.stack.pop()
       self.iteration += 1
       self.visited[name] = 1
