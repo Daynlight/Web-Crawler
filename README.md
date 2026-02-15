@@ -14,13 +14,11 @@
 - [x] Na końcu wypisz maksymalną głębokość, którą udało się osiągnąć.
 
 ## TODO:
-- [ ] Clean up
-- [ ] Optimization
+- [x] Clean up
+- [x] Fetch link custom function
 - [ ] Github
-- [ ] Docs
 - [ ] Find content
-- [ ] Fetch link custom function
-- [ ] Graph draw
+- [ ] Docs
 
 ## Kitty
 <img width=100% src="https://i.pinimg.com/1200x/0b/0b/ea/0b0bea9cd8a503ea46b14a7f344a1233.jpg">

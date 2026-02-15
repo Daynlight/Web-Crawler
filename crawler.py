@@ -88,7 +88,8 @@ class Tree:
 class Crawler:
   def clear(self, url: str, max_iter: int = 200, 
             begin: Callable = lambda soup: soup.find("h2", id="See_also"), 
-            end: Callable = lambda sibling: getattr(sibling.next_element, "name", None) == "h2"):
+            end: Callable = lambda sibling: getattr(sibling.next_element, "name", None) == "h2",
+            get: Callable = lambda url, data: None):
     self.url = url
     self.max_iter = max_iter
     self.iteration = 0
@@ -98,6 +99,7 @@ class Crawler:
 
     self.begin: Callable = begin
     self.end: Callable = end
+    self.get = get
 
   def getData(self, url: str):
     headers = { "User-Agent": "Chrome/116.0 Safari/537.36" }
@@ -128,11 +130,14 @@ class Crawler:
 
   def search(self, url: str, max_iter: int = 200, 
             begin: Callable = lambda soup: soup.find("h2", id="See_also"), 
-            end: Callable = lambda sibling: getattr(sibling.next_element, "name", None) == "h2"):
+            end: Callable = lambda sibling: getattr(sibling.next_element, "name", None) == "h2",
+            get: Callable = None):
     self.clear(url, max_iter, begin, end)
     pbar = tqdm(total=self.max_iter, desc="Searching")
 
     data = self.getData(self.url)
+    if(get is not None):
+      get(self.url, data)
     if(data is not None):
         self.getLinks(self.url, data)
       
@@ -144,6 +149,8 @@ class Crawler:
       name = self.stack.pop()
       self.iteration += 1
       data = self.getData(name)
+      if(get is not None):
+        get(name, data)
       if(data is not None):
         self.getLinks(name, data)
       
