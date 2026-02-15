@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 from typing import Callable
 
 
@@ -13,13 +13,44 @@ class Stack:
     self.elements = set()
 
   def push(self, el):
-    self.elements.add(el)
-    self.data.append(el)
+    if el not in self.elements:
+      self.elements.add(el)
+      self.data.append(el)
   
   def pop(self):
-    el = self.data.pop()
-    self.elements.remove(el)
-    return el
+    if self.data:
+      el = self.data.pop()
+      self.elements.remove(el)
+      return el
+    return None
+
+  def size(self):
+    return len(self.data)
+
+  def exists(self, name):
+    if name in self.elements:
+      return True
+    return False
+
+
+
+
+class Queue:
+  def __init__(self):
+    self.data = []
+    self.elements = set()
+
+  def push(self, el):
+    if el not in self.elements:
+      self.elements.add(el)
+      self.data.append(el)
+  
+  def pop(self):
+    if self.data:
+      el = self.data.pop(0)
+      self.elements.remove(el)
+      return el
+    return None
   
   def size(self):
     return len(self.data)
@@ -38,6 +69,9 @@ class Tree:
     self.root = None
 
   def addConnection(self, parent, child):
+    if child in self.tree:
+      return
+    
     if(self.root == None):
       self.root = parent
 
@@ -72,6 +106,16 @@ class Tree:
           stack.append((neighbor, depth + 1))
 
     return max_depth
+  
+  def remove(self, name):
+    if name not in self.tree:
+      return
+    
+    for children in self.tree.values():
+      while name in children:
+        children.remove(name)
+    
+    self.tree.pop(name)
 
   def visited(self):
     return list(self.tree.keys())
@@ -86,15 +130,14 @@ class Tree:
 
 
 class Crawler:
-  def clear(self, url: str, max_iter: int = 200, 
-            begin: Callable = lambda soup: soup.find("h2", id="See_also"), 
-            end: Callable = lambda sibling: getattr(sibling.next_element, "name", None) == "h2",
-            get: Callable = lambda url, data: None):
+  def clear(self, url: str, structure, begin: Callable, 
+            end: Callable, max_iter: int = 200, 
+            get: Callable = None):
     self.url = url
     self.max_iter = max_iter
     self.iteration = 0
     
-    self.stack = Stack()
+    self.structure = structure
     self.tree = Tree()
 
     self.begin: Callable = begin
@@ -115,6 +158,9 @@ class Crawler:
     soup = BeautifulSoup(data, "html.parser")
     see_also = self.begin(soup)
 
+    parsed_url = urlparse(url)
+    base_url = f"{parsed_url.scheme}://{parsed_url.netloc}/"
+
     if(see_also):
       heading = see_also.parent
       for sibling in heading.next_siblings:
@@ -123,17 +169,16 @@ class Crawler:
 
         if hasattr(sibling, "find_all"):
           for a_tag in sibling.find_all("a", href=True):
-            el = urljoin("https://en.wikipedia.org/", a_tag["href"])
-            if(not self.tree.exists(el) and not self.stack.exists(el)):
-              self.stack.push(el)
+            el = urljoin(base_url, a_tag["href"])
+            if(not self.tree.exists(el) and not self.structure.exists(el)):
+              self.structure.push(el)
               self.tree.addConnection(url, el)
 
-  def search(self, url: str, max_iter: int = 200, 
-            begin: Callable = lambda soup: soup.find("h2", id="See_also"), 
-            end: Callable = lambda sibling: getattr(sibling.next_element, "name", None) == "h2",
+  def search(self, url: str, structure, begin: Callable, 
+            end: Callable, max_iter: int = 200, 
             get: Callable = None):
     
-    self.clear(url, max_iter, begin, end, get)
+    self.clear(url, structure, begin, end, max_iter, get)
     pbar = tqdm(total=self.max_iter, desc="Searching")
 
     data = self.getData(self.url)
@@ -146,8 +191,8 @@ class Crawler:
     self.iteration += 1
     pbar.update(1)
 
-    while self.stack.size() > 0 and self.iteration < self.max_iter:
-      name = self.stack.pop()
+    while self.structure.size() > 0 and self.iteration < self.max_iter:
+      name = self.structure.pop()
       self.iteration += 1
       data = self.getData(name)
       
@@ -157,6 +202,10 @@ class Crawler:
         self.getLinks(name, data)
       
       pbar.update(1)
+
+    while(self.structure.size() > 0):
+      name = self.structure.pop()
+      self.tree.remove(name)
 
   def maxDepth(self):        
     return self.tree.maxDepth()
