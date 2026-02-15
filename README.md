@@ -18,6 +18,9 @@
 - [ ] Optimization
 - [ ] Github
 - [ ] Docs
+- [ ] Find content
+- [ ] Fetch link custom function
+- [ ] Graph draw
 
 ## Kitty
 <img width=100% src="https://i.pinimg.com/1200x/0b/0b/ea/0b0bea9cd8a503ea46b14a7f344a1233.jpg">
