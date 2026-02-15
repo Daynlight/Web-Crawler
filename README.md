@@ -17,7 +17,6 @@
 - [x] Clean up
 - [x] Fetch link custom function
 - [x] Find content
-- [ ] Github
 - [ ] Docs
 
 ## Kitty

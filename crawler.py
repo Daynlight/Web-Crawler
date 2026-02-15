@@ -108,7 +108,7 @@ class Crawler:
       res.raise_for_status()
       return res.text 
     except requests.RequestException as e:
-      print(f"Failed to fetch {url}: {e}")
+      tqdm.write(f"Failed to fetch {url}: {e}")
       return None
 
   def getLinks(self, url:str, data: str):
@@ -137,7 +137,7 @@ class Crawler:
     pbar = tqdm(total=self.max_iter, desc="Searching")
 
     data = self.getData(self.url)
-    if(get is not None):
+    if(get is not None and data is not None):
       get(self.url, data)
     if(data is not None):
         self.getLinks(self.url, data)
@@ -151,7 +151,7 @@ class Crawler:
       self.iteration += 1
       data = self.getData(name)
       
-      if(get is not None):
+      if(get is not None and data is not None):
         get(name, data)
       if(data is not None):
         self.getLinks(name, data)
