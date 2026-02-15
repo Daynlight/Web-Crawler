@@ -1,16 +1,17 @@
 import requests
 from bs4 import BeautifulSoup
-from queue import Queue
+from collections import defaultdict
 
 
 
 
 class Crawler:
   visited = {}
-  queue = Queue()
-  enqueued = set() 
+  stack = []
+  enstackd = set() 
   max_depth = 0
   iteration = 0
+  graph = defaultdict(list)
 
   def __init__(self, url: str, max_iter: int = 200):
     self.url = url
@@ -24,7 +25,7 @@ class Crawler:
       }
     return requests.get(url, headers=headers).text
 
-  def getLinks(self, data: str):
+  def getLinks(self, url:str, data: str):
     soup = BeautifulSoup(data, "html.parser")
     links = []
     see_also_span = soup.find("h2", id="See_also")
@@ -40,24 +41,40 @@ class Crawler:
 
     for el in links:
       if(el not in self.visited or
-        el not in self.enqueued):
-        self.queue.put(el)
-        self.enqueued.add(el)
+        el not in self.enstackd):
+        self.stack.append(el)
+        self.enstackd.add(el)
+        self.graph[url].append(el)
 
 
   def search(self):
     self.iteration += 1
     self.visited[self.url] = 1
     data = self.getData(self.url)
-    self.getLinks(data)
+    self.getLinks(self.url, data)
 
-    while not self.queue.empty() and self.iteration < self.max_iter:
-      name = self.queue.get()
-      data = self.getData(name)
-      self.getLinks(data)
-      self.visited[name] = 1
+    while len(self.stack) > 0 and self.iteration < self.max_iter:
+      name = self.stack.pop()
       self.iteration += 1
-    
+      self.visited[name] = 1
+      data = self.getData(name)
+      self.getLinks(name, data)
+
+  def maxDepth(self):        
+    max_depth = 0
+    stack = [(self.url, 0)]
+    visited = set()
+
+    while stack:
+        node, depth = stack.pop()
+        max_depth = max(max_depth, depth)
+        visited.add(node)
+
+        for neighbor in self.graph[node]:
+            if neighbor not in visited:
+                stack.append((neighbor, depth + 1))
+
+    return max_depth
 
   def maxIterations(self):
     return self.iteration
@@ -68,6 +85,7 @@ class Crawler:
 
 crawler = Crawler("https://en.wikipedia.org/wiki/Internet")
 crawler.search()
-print(crawler.maxIterations())
+print("Iterations:",crawler.maxIterations())
+print("Max depth:", crawler.maxDepth())
 for el in crawler.getVisited():
   print(el)
